@@ -1,3 +1,6 @@
+"""
+drag_drop_zip_b64_threaded_folder_fix.py
+"""
 import base64
 import io
 import logging
@@ -40,7 +43,7 @@ class ProcessWorker(QThread):
         Executes the file/folder processing on a background thread.
         """
         try:
-            # 'parent()' should be our main window of type DragDropZipBase64Window.
+            # 'parent()' should be our main window of type DragDropZipBase64Window
             main_window = self.parent()
             if hasattr(main_window, "_process_path") and callable(main_window._process_path):
                 main_window._process_path(self.path)
@@ -118,12 +121,25 @@ class DragDropZipBase64Window(QWidget):
         Determines if 'path' is Base64 or not.
         If not Base64, compress and encode.
         If Base64, decode and extract the resulting ZIP.
+
+        NOTE: Directories cannot be checked for Base64 by reading bytes,
+        so they are always zipped and encoded.
         """
+        # If it's a directory, skip base64 check and zip+encode
+        if path.is_dir():
+            logging.info(
+                "Detected a directory, skipping Base64 check -> Zipping and encoding: %s", path)
+            self.zip_and_encode(path)
+            return
+
+        # It's a file, so we can safely read bytes
         data: bytes = path.read_bytes()
 
         if self.is_base64_data(data):
+            # If valid Base64, decode + extract
             self.decode_and_extract(path, data)
         else:
+            # Otherwise, zip + encode
             self.zip_and_encode(path)
 
     def is_base64_data(self, data: bytes) -> bool:
@@ -143,12 +159,12 @@ class DragDropZipBase64Window(QWidget):
         If the dropped file ends with '.b64', we remove that to form the .zip name.
         Otherwise, we append '_decoded.zip' as a fallback.
         """
-        # 1) Decode to get ZIP data
+        # 1) Decode
         zip_data: bytes = base64.b64decode(b64data)
 
         # 2) Decide on output ZIP path
         if path.suffix == '.b64':
-            # Remove '.b64' -> yields .zip if original was "something.zip.b64"
+            # remove .b64 -> yields .zip if original was "something.zip.b64"
             zip_path: Path = path.with_suffix('')
         else:
             # Fallback if no .b64 extension
@@ -192,7 +208,7 @@ class DragDropZipBase64Window(QWidget):
         zip_data: bytes = self.compress_to_zip(path)
         b64data: bytes = base64.b64encode(zip_data)
 
-        # Construct output path as e.g. "file.ext.zip.b64"
+        # Construct output path as e.g. "file.ext.zip.b64" or "folder.zip.b64"
         output_path: Path = path.with_suffix(path.suffix + '.zip.b64')
         output_path.write_bytes(b64data)
 

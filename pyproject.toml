@@ -9,7 +9,7 @@ description = "Drag & Drop tool for ZIP compression and Base64 encoding/decoding
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Your Name", email = "you@example.com" },
+  { name = "EDemerzel", email = "EDemerzel@outlook.com" },
 ]
 requires-python = ">=3.8"
 dependencies = [
