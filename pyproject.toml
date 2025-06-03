@@ -16,11 +16,13 @@ dependencies = [
   "PyQt5>=5.15",
 ]
 
-# defines a console‐script entry point so you can run it as:
-#    python -m drag_drop_zip_b64
+# defines a console-script entry point
 [project.scripts]
 drag-drop-zip-b64 = "drag_drop_zip_b64:main"
 
 [tool.pytest.ini_options]
-# if you add any tests later
-python_files = "tests/*.py"
+python_files = ["tests/*.py"]
+
+[tool.mypy]
+files = ["drag_drop_zip_b64.py"]
+ignore_missing_imports = true
