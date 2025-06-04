@@ -1,13 +1,14 @@
 """Tests for the drag-drop-zip-b64 application."""
-import pytest
 import base64
 import zipfile
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock
-from io import BytesIO
 
-from drag_drop_zip_b64.main import main
+import pytest
+
 from drag_drop_zip_b64.drag_drop_zip_b64_threaded import DragDropZipBase64Window
+from drag_drop_zip_b64.main import main
 
 
 def test_smoke(monkeypatch):

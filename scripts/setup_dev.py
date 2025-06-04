@@ -7,8 +7,7 @@ from pathlib import Path
 
 def main():
     """Set up development environment."""
-    # Fix: Go up two levels to reach project root
-    project_root = Path(__file__).parent.parent.parent
+    project_root = Path(__file__).parent.parent
 
     # Install in development mode
     subprocess.run([sys.executable, "-m", "pip", "install", "-e", ".[dev]"],

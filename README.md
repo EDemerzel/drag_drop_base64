@@ -16,6 +16,25 @@ A PyQt5 GUI application for drag-and-drop ZIP compression and Base64 encoding/de
 pip install .
 ```
 
+## Development Setup
+
+For development, clone the repository and run the setup script:
+
+```bash
+git clone <your-repo-url>
+cd drag_drop_base64
+python scripts/setup_dev.py
+```
+
+This will install the package in development mode with all development dependencies.
+
+## Development Tools
+
+- **Testing**: `pytest`
+- **Code formatting**: `black src/ tests/`
+- **Import sorting**: `isort src/ tests/`
+- **Type checking**: `mypy src/`
+
 ## Usage
 
 ### GUI Application
