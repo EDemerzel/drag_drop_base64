@@ -1,0 +1,156 @@
+# Set default behavior for all files
+* text=auto eol=lf
+
+# Python source files
+*.py text eol=lf diff=python
+*.pyx text eol=lf diff=python
+*.pyi text eol=lf diff=python
+*.pyc binary
+*.pyo binary
+*.pyd binary
+
+# Configuration files
+*.toml text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+*.conf text eol=lf
+
+# Requirements and dependencies
+requirements*.txt text eol=lf
+*.in text eol=lf
+pyproject.toml text eol=lf
+setup.py text eol=lf
+setup.cfg text eol=lf
+Pipfile text eol=lf
+Pipfile.lock text eol=lf
+
+# Documentation
+*.md text eol=lf diff=markdown
+*.rst text eol=lf
+*.txt text eol=lf
+LICENSE text eol=lf
+README* text eol=lf
+CHANGELOG* text eol=lf
+CONTRIBUTING* text eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Data files (for your base64/zip operations)
+*.json text eol=lf
+*.xml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.csv text eol=lf
+
+# Binary files that your app might process
+*.zip binary
+*.7z binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.xz binary
+
+# Base64 files (your app's specialty)
+*.b64 text eol=lf
+*.base64 text eol=lf
+
+# Encrypted files (your app creates these)
+*.encrypted.* binary
+
+# SSL/TLS certificates and keys
+*.pem text eol=lf
+*.crt text eol=lf
+*.cer binary
+*.der binary
+*.key text eol=lf
+*.p12 binary
+*.pfx binary
+
+# Log files
+*.log text eol=lf
+
+# Git files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.gitmodules text eol=lf
+
+# IDE and editor files
+*.code-workspace text eol=lf
+.vscode/* text eol=lf
+*.sublime-project text eol=lf
+*.sublime-workspace text eol=lf
+
+# Test files
+test_*.py text eol=lf diff=python
+*_test.py text eol=lf diff=python
+tests/*.py text eol=lf diff=python
+
+# Package files
+*.egg binary
+*.whl binary
+*.tar.gz binary
+
+# Qt-specific files (for PyQt5)
+*.ui text eol=lf
+*.qrc text eol=lf
+*.ts text eol=lf
+*.qm binary
+
+# Images that might be processed
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.ico binary
+*.svg text eol=lf
+
+# Font files
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Development and build files
+Makefile text eol=lf
+makefile text eol=lf
+*.mk text eol=lf
+tox.ini text eol=lf
+.coveragerc text eol=lf
+.flake8 text eol=lf
+.pylintrc text eol=lf
+mypy.ini text eol=lf
+pytest.ini text eol=lf
+
+# CI/CD files
+.github/* text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+docker-compose*.yml text eol=lf
+
+# Exclude files from exports
+.gitattributes export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+tests/ export-ignore
+*.log export-ignore
+__pycache__/ export-ignore
+*.egg-info/ export-ignore
+.venv/ export-ignore
+.pytest_cache/ export-ignore
+.mypy_cache/ export-ignore
+.coverage export-ignore
+htmlcov/ export-ignore
+
+# Language statistics (help GitHub detect Python project)
+*.py linguist-language=Python
+*.pyi linguist-language=Python
+
+# Mark generated files
+src/drag_drop_zip_b64/_version.py linguist-generated=true

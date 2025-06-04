@@ -1,6 +1,6 @@
-# Drag and Drop Zip and Base64 Encoder with Encryption
+# Drag and Drop Zip and Base64 Encoder with Encryption & Secure Upload
 
-A PyQt5 GUI application for drag-and-drop ZIP compression and Base64 encoding/decoding with optional AES encryption.
+A PyQt5 GUI application for drag-and-drop ZIP compression and Base64 encoding/decoding with optional AES encryption and secure HTTPS upload capabilities.
 
 ## Features
 
@@ -9,96 +9,139 @@ A PyQt5 GUI application for drag-and-drop ZIP compression and Base64 encoding/de
 - **Compression**: Compresses files/folders to ZIP then encodes as Base64
 - **Extraction**: Decodes Base64 back to ZIP and extracts contents
 - **🔐 AES Encryption**: Optional password-based encryption for secure file storage
+- **🌐 Secure Upload**: HTTPS file upload with SSL/TLS verification
 - **Security**: Protected against Zip Slip attacks during extraction
 
-## New Encryption Features
-
-- **Toggle Encryption**: Easy on/off switch in the UI
-- **Password Protection**: PBKDF2-based key derivation with random salt
-- **AES-256 Encryption**: Industry-standard encryption using cryptography library
-- **Secure File Format**: Encrypted files are clearly marked and require the correct password
-
 ## Installation
+
+### Standard Installation
 
 ```bash
 pip install .
 ```
 
-## Development Setup
+### Installation with SSL Issues (Corporate Networks)
 
-For development, clone the repository and run the setup script:
+If you encounter SSL certificate issues during installation:
+
+#### Windows
 
 ```bash
-git clone <your-repo-url>
-cd drag_drop_base64
+scripts\pip_install.bat -e .[dev]
+```
+
+#### Linux/Mac
+
+```bash
+chmod +x scripts/pip_install.sh
+./scripts/pip_install.sh -e .[dev]
+```
+
+#### Manual SSL Bypass
+
+```bash
+pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -e .[dev]
+```
+
+### Development Setup
+
+#### Standard Setup
+
+```bash
 python scripts/setup_dev.py
 ```
 
-This will install the package in development mode with all development dependencies.
+#### Setup with SSL Issues
 
-## Development Tools
+The setup script automatically handles SSL bypass for package installation in corporate/restricted networks.
 
-- **Testing**: `pytest`
-- **Code formatting**: `black src/ tests/`
-- **Import sorting**: `isort src/ tests/`
-- **Type checking**: `mypy src/`
+#### Environment Variables for SSL Bypass
+
+To bypass SSL verification at runtime (for network uploads):
+
+```bash
+# Windows
+set DRAG_DROP_BYPASS_SSL=1
+
+# Linux/Mac
+export DRAG_DROP_BYPASS_SSL=1
+```
 
 ## Usage
 
 ### GUI Application
 
-Launch the graphical interface:
+#### Launch the graphical interface
 
 ```bash
 drag-drop-zip-b64
 ```
 
-Then:
+#### With SSL Bypass (if needed)
 
-1. **Optional**: Enable encryption and enter a password
-2. Drag and drop files or folders onto the window
-3. Files will be processed according to your encryption settings
+```bash
+# Windows
+set DRAG_DROP_BYPASS_SSL=1 && drag-drop-zip-b64
 
-### Programmatic Usage
-
-```python
-from drag_drop_zip_b64 import DragDropZipBase64Window
-from PyQt5.QtWidgets import QApplication
-import sys
-
-app = QApplication(sys.argv)
-window = DragDropZipBase64Window()
-window.show()
-sys.exit(app.exec_())
+# Linux/Mac
+DRAG_DROP_BYPASS_SSL=1 drag-drop-zip-b64
 ```
 
-## File Processing
+### Troubleshooting SSL Issues
 
-### Without Encryption
+#### Common SSL Problems
 
-- **Non-Base64 files/folders** → Compressed to `.zip.b64` format
-- **Base64 files (`.b64`)** → Decoded to ZIP and extracted
+- **Corporate Firewalls**: May block SSL connections
+- **Outdated Certificates**: System certificates may be outdated
+- **Proxy Servers**: May require specific configuration for pip
 
-### With Encryption
+#### Solutions
 
-- **Non-Base64 files/folders** → Compressed to `.encrypted.zip.b64` format (password-protected)
-- **Encrypted Base64 files** → Require correct password for decoding and extraction
+- **Use Trusted Hosts**: All installation scripts include `--trusted-host` flags
+- **Disable SSL Verification**: Set environment variables to bypass SSL checks
+- **Update Certificates**: Ensure your operating system's certificates are up to date
 
-## Security Notes
+#### Security Note
 
-- **Password Storage**: Passwords are never stored, only used for key derivation
-- **Salt Generation**: Each encryption uses a unique random salt
-- **Key Derivation**: PBKDF2 with 100,000 iterations and SHA-256
-- **Encryption Algorithm**: AES-256 in CBC mode with HMAC authentication
+SSL bypass is only recommended for development in restricted networks. Always use proper SSL verification in production environments.
 
-## Testing
+#### Testing
 
 ```bash
 pip install pytest
 pytest
 ```
 
-## Dependencies
+### Dependencies
 
 - **PyQt5**: GUI framework
 - **cryptography**: Encryption library for secure file protection
+- **requests**: HTTP library with SSL/TLS support
+- **urllib3**: Advanced HTTP client with security features
+
+## **Usage Instructions**
+
+### **For Development Setup with SSL Issues:**
+
+```bash
+# Run the enhanced setup script
+python scripts/setup_dev.py
+```
+
+### For Manual Package Installation
+
+```bash
+# Windows
+scripts\pip_install.bat PyQt5 cryptography requests
+
+# Linux/Mac
+./scripts/pip_install.sh PyQt5 cryptography requests
+```
+
+### For Runtime SSL Bypass (if uploading to servers with SSL issues)
+
+```bash
+# Set environment variable before running
+export DRAG_DROP_BYPASS_SSL=1
+drag-drop-zip-b64
+```

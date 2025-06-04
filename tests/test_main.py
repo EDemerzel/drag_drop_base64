@@ -1,4 +1,5 @@
 """Tests for the drag-drop-zip-b64 application with encryption."""
+
 import base64
 import zipfile
 from io import BytesIO
@@ -20,6 +21,7 @@ def test_password_visibility_toggle():
     # Import QLineEdit properly for the test
     # <- This is correct, QLineEdit IS in QtWidgets
     from PyQt5.QtWidgets import QLineEdit
+
     assert window.password_input.echoMode() == QLineEdit.Password
 
     # Toggle to show
