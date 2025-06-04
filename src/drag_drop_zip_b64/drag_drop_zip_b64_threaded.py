@@ -1,9 +1,9 @@
 """
-Drag & Drop tool for ZIP compression and Base64 encoding/decoding.
+Drag & Drop tool for ZIP compression and Base64 encoding/decoding with optional encryption.
 
 This module provides a PyQt5 GUI that accepts drag-and-drop operations for files
 and folders, automatically detecting Base64 content for decoding or compressing
-non-Base64 content into ZIP+Base64 format.
+non-Base64 content into ZIP+Base64 format with optional AES encryption.
 """
 import base64
 import io
@@ -12,17 +12,25 @@ import os
 import sys
 import zipfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
     QLabel,
     QVBoxLayout,
+    QHBoxLayout,
     QMessageBox,
     QDragEnterEvent,
     QDropEvent,
+    QCheckBox,
+    QLineEdit,
+    QGroupBox,
+    QPushButton,
 )
 
 # Module-level logger
@@ -47,7 +55,7 @@ class ProcessWorker(QThread):
             if isinstance(parent, DragDropZipBase64Window):
                 parent.process_path(self.path)
             self.finished.emit(str(self.path))
-        except (OSError, RuntimeError, zipfile.BadZipFile) as e:
+        except (OSError, RuntimeError, zipfile.BadZipFile, ValueError) as e:
             logger.exception("Error processing %s", self.path)
             self.error.emit(str(self.path), str(e))
         except Exception as e:
@@ -57,11 +65,12 @@ class ProcessWorker(QThread):
 
 class DragDropZipBase64Window(QWidget):
     """
-    A PyQt5 window that allows drag-and-drop for files or folders.
+    A PyQt5 window that allows drag-and-drop for files or folders with optional encryption.
 
     Features:
     - Detects Base64 content and decodes to ZIP + extracts
     - Compresses non-Base64 content to ZIP + Base64 encodes
+    - Optional AES encryption/decryption with password protection
     - Secure ZIP extraction with path traversal protection
     """
 
@@ -70,22 +79,152 @@ class DragDropZipBase64Window(QWidget):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """Sets up the window UI."""
-        self.setWindowTitle('Drag & Drop Ultra Compress & Base64')
+        """Sets up the window UI with encryption options."""
+        self.setWindowTitle(
+            'Drag & Drop Ultra Compress & Base64 with Encryption')
         self.setAcceptDrops(True)
 
-        layout: QVBoxLayout = QVBoxLayout()
-        self.label: QLabel = QLabel(
+        main_layout = QVBoxLayout()
+
+        # Main instruction label
+        self.label = QLabel(
             'Drag and drop files or folders here.\n'
             '• If it is not Base64, it will be compressed into a .zip and then encoded as .b64.\n'
             '• If it is already Base64 (and ends with .b64), it will be decoded back to a .zip'
-            ' and extracted.'
+            ' and extracted.\n'
+            '• Enable encryption below for password protection.'
         )
         self.label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.label)
+        main_layout.addWidget(self.label)
 
-        self.setLayout(layout)
-        self.resize(600, 300)
+        # Encryption options group
+        encryption_group = QGroupBox("Encryption Options")
+        encryption_layout = QVBoxLayout()
+
+        # Enable encryption checkbox
+        self.encryption_enabled = QCheckBox("Enable AES Encryption")
+        self.encryption_enabled.toggled.connect(self.toggle_encryption)
+        encryption_layout.addWidget(self.encryption_enabled)
+
+        # Password input
+        password_layout = QHBoxLayout()
+        password_layout.addWidget(QLabel("Password:"))
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.setPlaceholderText("Enter encryption password")
+        self.password_input.setEnabled(False)
+        password_layout.addWidget(self.password_input)
+
+        # Show/Hide password button
+        self.show_password_btn = QPushButton("Show")
+        self.show_password_btn.setEnabled(False)
+        self.show_password_btn.clicked.connect(self.toggle_password_visibility)
+        password_layout.addWidget(self.show_password_btn)
+
+        encryption_layout.addLayout(password_layout)
+
+        # Encryption status label
+        self.encryption_status = QLabel("Encryption: Disabled")
+        self.encryption_status.setStyleSheet("color: red; font-weight: bold;")
+        encryption_layout.addWidget(self.encryption_status)
+
+        encryption_group.setLayout(encryption_layout)
+        main_layout.addWidget(encryption_group)
+
+        self.setLayout(main_layout)
+        self.resize(700, 400)
+
+    def toggle_encryption(self, enabled: bool) -> None:
+        """Enable/disable encryption controls based on checkbox state."""
+        self.password_input.setEnabled(enabled)
+        self.show_password_btn.setEnabled(enabled)
+
+        if enabled:
+            self.encryption_status.setText("Encryption: Enabled")
+            self.encryption_status.setStyleSheet(
+                "color: green; font-weight: bold;")
+        else:
+            self.encryption_status.setText("Encryption: Disabled")
+            self.encryption_status.setStyleSheet(
+                "color: red; font-weight: bold;")
+            self.password_input.clear()
+
+    def toggle_password_visibility(self) -> None:
+        """Toggle password field visibility."""
+        if self.password_input.echoMode() == QLineEdit.Password:
+            self.password_input.setEchoMode(QLineEdit.Normal)
+            self.show_password_btn.setText("Hide")
+        else:
+            self.password_input.setEchoMode(QLineEdit.Password)
+            self.show_password_btn.setText("Show")
+
+    def get_encryption_key(self, password: str, salt: bytes) -> bytes:
+        """
+        Derive an encryption key from password and salt using PBKDF2.
+
+        Args:
+            password: User-provided password
+            salt: Random salt bytes
+
+        Returns:
+            32-byte encryption key
+        """
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+        )
+        return base64.urlsafe_b64encode(kdf.derive(password.encode()))
+
+    def encrypt_data(self, data: bytes, password: str) -> Tuple[bytes, bytes]:
+        """
+        Encrypt data using AES encryption with password-derived key.
+
+        Args:
+            data: Data to encrypt
+            password: Encryption password
+
+        Returns:
+            Tuple of (encrypted_data, salt)
+        """
+        # Generate random salt
+        salt = os.urandom(16)
+
+        # Derive key from password
+        key = self.get_encryption_key(password, salt)
+
+        # Encrypt data
+        fernet = Fernet(key)
+        encrypted_data = fernet.encrypt(data)
+
+        return encrypted_data, salt
+
+    def decrypt_data(self, encrypted_data: bytes, salt: bytes, password: str) -> bytes:
+        """
+        Decrypt data using AES decryption with password-derived key.
+
+        Args:
+            encrypted_data: Data to decrypt
+            salt: Salt used during encryption
+            password: Decryption password
+
+        Returns:
+            Decrypted data
+
+        Raises:
+            ValueError: If password is incorrect or data is corrupted
+        """
+        # Derive same key from password and salt
+        key = self.get_encryption_key(password, salt)
+
+        # Decrypt data
+        fernet = Fernet(key)
+        try:
+            return fernet.decrypt(encrypted_data)
+        except Exception as e:
+            raise ValueError(
+                f"Decryption failed - incorrect password or corrupted data: {e}")
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         """Accepts the drag if it contains URLs (files/folders)."""
@@ -97,6 +236,17 @@ class DragDropZipBase64Window(QWidget):
         Called when the user drops files/folders onto the widget.
         Each path is handed off to a background worker (QThread).
         """
+        # Validate encryption settings
+        if self.encryption_enabled.isChecked():
+            password = self.password_input.text().strip()
+            if not password:
+                QMessageBox.warning(
+                    self,
+                    "Password Required",
+                    "Please enter a password when encryption is enabled."
+                )
+                return
+
         for url in event.mimeData().urls():
             path = Path(url.toLocalFile())
             worker = ProcessWorker(path, parent=self)
@@ -124,8 +274,8 @@ class DragDropZipBase64Window(QWidget):
         """
         Public API: Determines if 'path' is Base64 or not.
 
-        If not Base64, compress and encode.
-        If Base64, decode and extract the resulting ZIP.
+        If not Base64, compress and encode (with optional encryption).
+        If Base64, decode and extract the resulting ZIP (with optional decryption).
 
         Args:
             path: File or directory path to process
@@ -134,6 +284,7 @@ class DragDropZipBase64Window(QWidget):
             OSError: If file operations fail
             RuntimeError: If ZIP extraction encounters security issues
             zipfile.BadZipFile: If ZIP file is corrupted
+            ValueError: If encryption/decryption fails
         """
         if not path.exists():
             raise OSError(f"Path does not exist: {path}")
@@ -141,7 +292,8 @@ class DragDropZipBase64Window(QWidget):
         # If it's a directory, skip base64 check and zip+encode
         if path.is_dir():
             logger.info(
-                "Detected a directory, skipping Base64 check -> Zipping and encoding: %s", path)
+                "Detected a directory, skipping Base64 check -> Zipping and encoding: %s", path
+            )
             self.zip_and_encode(path)
             return
 
@@ -175,6 +327,7 @@ class DragDropZipBase64Window(QWidget):
     def decode_and_extract(self, path: Path, b64data: bytes) -> None:
         """
         Decodes Base64 data to a ZIP file, then extracts that ZIP.
+        Handles both encrypted and non-encrypted data.
 
         Args:
             path: Original file path
@@ -184,11 +337,42 @@ class DragDropZipBase64Window(QWidget):
             OSError: If file write operations fail
             zipfile.BadZipFile: If decoded data is not a valid ZIP
             RuntimeError: If ZIP contains unsafe paths
+            ValueError: If decryption fails
         """
         try:
-            zip_data: bytes = base64.b64decode(b64data)
+            decoded_data: bytes = base64.b64decode(b64data)
         except Exception as e:
             raise RuntimeError(f"Invalid Base64 data: {e}")
+
+        # Check if this is encrypted data (starts with our encryption marker)
+        if decoded_data.startswith(b"ENCRYPTED:"):
+            if not self.encryption_enabled.isChecked():
+                raise ValueError(
+                    "This file appears to be encrypted, but encryption is not enabled. "
+                    "Please enable encryption and enter the correct password."
+                )
+
+            password = self.password_input.text().strip()
+            if not password:
+                raise ValueError("Password required for encrypted file")
+
+            # Extract salt and encrypted data
+            try:
+                # Format: b"ENCRYPTED:" + 16-byte salt + encrypted_data
+                salt = decoded_data[10:26]  # bytes 10-25 (16 bytes)
+                # rest is encrypted data
+                encrypted_zip_data = decoded_data[26:]
+
+                # Decrypt the ZIP data
+                zip_data = self.decrypt_data(
+                    encrypted_zip_data, salt, password)
+                logger.info("Successfully decrypted file")
+
+            except Exception as e:
+                raise ValueError(f"Decryption failed: {e}")
+        else:
+            # Not encrypted, use as-is
+            zip_data = decoded_data
 
         # Decide on output ZIP path
         if path.suffix == '.b64':
@@ -244,7 +428,7 @@ class DragDropZipBase64Window(QWidget):
     def zip_and_encode(self, path: Path) -> None:
         """
         Compresses the given file/folder into an in-memory ZIP,
-        then Base64-encodes it and writes out '<path>.zip.b64'.
+        optionally encrypts it, then Base64-encodes it and writes out '<path>.zip.b64'.
 
         Args:
             path: File or directory to compress and encode
@@ -252,12 +436,37 @@ class DragDropZipBase64Window(QWidget):
         Raises:
             OSError: If file operations fail
             RuntimeError: If compression fails
+            ValueError: If encryption fails
         """
         try:
             zip_data: bytes = self.compress_to_zip(path)
-            b64data: bytes = base64.b64encode(zip_data)
 
-            output_path: Path = path.with_suffix(path.suffix + '.zip.b64')
+            # Encrypt if enabled
+            if self.encryption_enabled.isChecked():
+                password = self.password_input.text().strip()
+                if not password:
+                    raise ValueError(
+                        "Password required when encryption is enabled")
+
+                encrypted_data, salt = self.encrypt_data(zip_data, password)
+
+                # Prepend encryption marker and salt
+                # Format: b"ENCRYPTED:" + 16-byte salt + encrypted_data
+                final_data = b"ENCRYPTED:" + salt + encrypted_data
+                logger.info("Successfully encrypted data")
+            else:
+                final_data = zip_data
+
+            # Base64 encode the final data
+            b64data: bytes = base64.b64encode(final_data)
+
+            # Determine output filename
+            if self.encryption_enabled.isChecked():
+                output_path: Path = path.with_suffix(
+                    path.suffix + '.encrypted.zip.b64')
+            else:
+                output_path: Path = path.with_suffix(path.suffix + '.zip.b64')
+
             output_path.write_bytes(b64data)
 
             logger.info("Zipped and encoded -> %s", output_path)
