@@ -9,20 +9,50 @@ description = "Drag & Drop tool for ZIP compression and Base64 encoding/decoding
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-  { name = "EDemerzel", email = "EDemerzel@outlook.com" },
+  { name = "EDemerzel", email = "edemerzel@outlook.com" },
 ]
 requires-python = ">=3.8"
 dependencies = [
   "PyQt5>=5.15",
 ]
 
-# defines a console-script entry point
+# Add this section after [project]
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
+]
+
+# Fix the console script entry point
 [project.scripts]
-drag-drop-zip-b64 = "drag_drop_zip_b64:main"
+drag-drop-zip-b64 = "drag_drop_zip_b64.main:main"
 
 [tool.pytest.ini_options]
-python_files = ["tests/*.py"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = ["-v", "--tb=short"]
 
 [tool.mypy]
-files = ["drag_drop_zip_b64.py"]
+files = ["src"]
 ignore_missing_imports = true
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_third_party = ["PyQt5"]
+src_paths = ["src"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
