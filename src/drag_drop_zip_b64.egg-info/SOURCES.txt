@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+src/drag_drop_zip_b64/__init__.py
+src/drag_drop_zip_b64/drag_drop_zip_b64_threaded.py
+src/drag_drop_zip_b64/main.py
+src/drag_drop_zip_b64/window.py
+src/drag_drop_zip_b64.egg-info/PKG-INFO
+src/drag_drop_zip_b64.egg-info/SOURCES.txt
+src/drag_drop_zip_b64.egg-info/dependency_links.txt
+src/drag_drop_zip_b64.egg-info/entry_points.txt
+src/drag_drop_zip_b64.egg-info/requires.txt
+src/drag_drop_zip_b64.egg-info/top_level.txt
+tests/test_main.py

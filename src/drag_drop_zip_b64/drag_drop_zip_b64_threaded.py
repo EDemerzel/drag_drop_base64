@@ -18,6 +18,8 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+# <- MOVED FROM QtWidgets TO QtGui
+from PyQt5.QtGui import QDragEnterEvent, QDropEvent
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -25,8 +27,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QMessageBox,
-    QDragEnterEvent,
-    QDropEvent,
     QCheckBox,
     QLineEdit,
     QGroupBox,

@@ -1,0 +1,2 @@
+[console_scripts]
+drag-drop-zip-b64 = drag_drop_zip_b64.main:main
