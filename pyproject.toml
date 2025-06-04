@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drag_drop_zip_b64"
-version = "0.2.0"
+version = "1.0.0"
 description = "Drag & Drop tool for ZIP compression and Base64 encoding/decoding with encryption"
 readme = "README.md"
 license = { file = "LICENSE" }
