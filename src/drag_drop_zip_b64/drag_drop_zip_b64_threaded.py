@@ -18,10 +18,8 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-# <- MOVED FROM QtWidgets TO QtGui
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent
 from PyQt5.QtWidgets import (
-    QApplication,
     QWidget,
     QLabel,
     QVBoxLayout,
@@ -224,7 +222,7 @@ class DragDropZipBase64Window(QWidget):
             return fernet.decrypt(encrypted_data)
         except Exception as e:
             raise ValueError(
-                f"Decryption failed - incorrect password or corrupted data: {e}")
+                f"Decryption failed - incorrect password or corrupted data: {e}") from e
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         """Accepts the drag if it contains URLs (files/folders)."""
@@ -301,7 +299,7 @@ class DragDropZipBase64Window(QWidget):
         try:
             data: bytes = path.read_bytes()
         except OSError as e:
-            raise OSError(f"Cannot read file {path}: {e}")
+            raise OSError(f"Cannot read file {path}: {e}") from e
 
         if self.is_base64_data(data):
             self.decode_and_extract(path, data)
@@ -342,7 +340,7 @@ class DragDropZipBase64Window(QWidget):
         try:
             decoded_data: bytes = base64.b64decode(b64data)
         except Exception as e:
-            raise RuntimeError(f"Invalid Base64 data: {e}")
+            raise RuntimeError(f"Invalid Base64 data: {e}") from e
 
         # Check if this is encrypted data (starts with our encryption marker)
         if decoded_data.startswith(b"ENCRYPTED:"):
@@ -369,7 +367,7 @@ class DragDropZipBase64Window(QWidget):
                 logger.info("Successfully decrypted file")
 
             except Exception as e:
-                raise ValueError(f"Decryption failed: {e}")
+                raise ValueError(f"Decryption failed: {e}") from e
         else:
             # Not encrypted, use as-is
             zip_data = decoded_data
@@ -385,7 +383,7 @@ class DragDropZipBase64Window(QWidget):
             zip_path.write_bytes(zip_data)
             logger.info("Decoded ZIP written to: %s", zip_path)
         except OSError as e:
-            raise OSError(f"Cannot write ZIP file {zip_path}: {e}")
+            raise OSError(f"Cannot write ZIP file {zip_path}: {e}") from e
 
         # Extract the ZIP
         self.extract_zip(zip_path)
@@ -421,7 +419,7 @@ class DragDropZipBase64Window(QWidget):
         except zipfile.BadZipFile as e:
             raise zipfile.BadZipFile(f"Corrupted ZIP file {zip_path}: {e}")
         except OSError as e:
-            raise OSError(f"Failed to extract {zip_path}: {e}")
+            raise OSError(f"Failed to extract {zip_path}: {e}") from e
 
         logger.info("Extracted to folder: %s", extract_folder)
 
@@ -472,7 +470,7 @@ class DragDropZipBase64Window(QWidget):
             logger.info("Zipped and encoded -> %s", output_path)
 
         except OSError as e:
-            raise OSError(f"Failed to create encoded file: {e}")
+            raise OSError(f"Failed to create encoded file: {e}") from e
 
     def compress_to_zip(self, path: Path) -> bytes:
         """
@@ -510,8 +508,8 @@ class DragDropZipBase64Window(QWidget):
                             zf.write(str(full_path), arcname=str(arcname))
 
         except OSError as e:
-            raise OSError(f"Failed to read files for compression: {e}")
+            raise OSError(f"Failed to read files for compression: {e}") from e
         except Exception as e:
-            raise RuntimeError(f"Compression failed: {e}")
+            raise RuntimeError(f"Compression failed: {e}") from e
 
         return buffer.getvalue()
