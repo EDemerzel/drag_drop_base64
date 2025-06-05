@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication
 from .drag_drop_zip_b64_threaded import DragDropZipBase64Window
 
 
-def configure_ssl_bypass():
+def configure_ssl_bypass() -> None:
     """Configure SSL bypass for runtime network operations if needed."""
     # Only bypass SSL in development/problematic networks
     if os.getenv("DRAG_DROP_BYPASS_SSL", "").lower() in ("1", "true", "yes"):
@@ -35,7 +35,8 @@ def main() -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler("drag_drop_zip_b64.log")],
+        handlers=[logging.StreamHandler(
+            sys.stdout), logging.FileHandler("drag_drop_zip_b64.log")],
     )
 
     # Log startup

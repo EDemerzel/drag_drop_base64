@@ -620,11 +620,15 @@ class DragDropZipBase64Window(QWidget):
                 f"Decryption failed - incorrect password or corrupted data: {e}"
             ) from e
 
+    # type: ignore[override]
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        """Accepts the drag if it contains URLs (files/folders)."""
+        """
+        Accepts the drag if it contains URLs (files/folders).
+        """
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
 
+    # type: ignore[override]
     def dropEvent(self, event: QDropEvent) -> None:
         """
         Called when the user drops files/folders onto the widget.

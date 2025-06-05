@@ -51,10 +51,29 @@ def install_with_ssl_bypass(packages=None):
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"❌ Installation failed: {e}")
+        print(f"❌ Package installation failed: {e}")
+        print(f"   Return code: {e.returncode}")
+        if e.stderr:
+            print(f"   Error output: {e.stderr}")
         return False
+
+    except FileNotFoundError as e:
+        print(f"❌ Python or pip not found: {e}")
+        print("🔧 Please ensure Python and pip are installed and in your PATH")
+        return False
+
+    except PermissionError as e:
+        print(f"❌ Permission denied: {e}")
+        print("🔧 Try running with administrator/sudo privileges")
+        return False
+
+    except KeyboardInterrupt:
+        print("\n⚠️  Installation interrupted by user")
+        return False
+
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"❌ Unexpected error: {type(e).__name__}: {e}")
+        print("🔧 Please check your configuration and try again")
         return False
 
 
@@ -70,12 +89,17 @@ def main():
 
     args = parser.parse_args()
 
-    if args.requirements or not args.packages:
-        success = install_with_ssl_bypass()
-    else:
-        success = install_with_ssl_bypass(args.packages)
+    try:
+        if args.requirements or not args.packages:
+            success = install_with_ssl_bypass()
+        else:
+            success = install_with_ssl_bypass(args.packages)
 
-    sys.exit(0 if success else 1)
+        sys.exit(0 if success else 1)
+
+    except KeyboardInterrupt:
+        print("\n⚠️  Interrupted by user")
+        sys.exit(130)
 
 
 if __name__ == "__main__":
