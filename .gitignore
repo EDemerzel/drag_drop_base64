@@ -63,3 +63,4 @@ Thumbs.db
 
 # Miscellaneous
 .mypy_cache/
+.pytest_cache/
