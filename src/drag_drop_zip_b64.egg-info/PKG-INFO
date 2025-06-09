@@ -33,6 +33,7 @@ Requires-Dist: PyQt5-stubs==5.15.6.0
 Requires-Dist: cryptography>=3.4.8
 Requires-Dist: requests>=2.31.0
 Requires-Dist: urllib3>=2.0.0
+Requires-Dist: types-requests>=2.31.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: black>=22.0.0; extra == "dev"

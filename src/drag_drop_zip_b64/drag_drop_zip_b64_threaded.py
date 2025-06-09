@@ -52,11 +52,11 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class SecureHTTPAdapter(HTTPAdapter):
     """Custom HTTP adapter with enhanced SSL/TLS security."""
 
-    def __init__(self, ssl_context=None, **kwargs):
+    def __init__(self, ssl_context=None, **kwargs) -> None:
         self.ssl_context = ssl_context
         super().__init__(**kwargs)
 
-    def init_poolmanager(self, *args, **kwargs):
+    def init_poolmanager(self, *args, **kwargs) -> None:
         kwargs["ssl_context"] = self.ssl_context or self._create_secure_ssl_context()
         return super().init_poolmanager(*args, **kwargs)
 
@@ -129,7 +129,7 @@ class NetworkWorker(QThread):
     finished = pyqtSignal(str)
     error = pyqtSignal(str)
 
-    def __init__(self, file_path: Path, url: str, ssl_verify: bool = True, parent=None):
+    def __init__(self, file_path: Path, url: str, ssl_verify: bool = True, parent=None) -> None:
         """
         Initialize the NetworkWorker for secure file uploads.
 
@@ -224,18 +224,18 @@ class NetworkWorker(QThread):
                     requests library's expected file-like interface.
                 """
 
-                def __init__(self, file_path: Path, progress_callback):
+                def __init__(self, file_path: Path, progress_callback) -> None:
                     self.file_path = file_path
                     self.progress_callback = progress_callback
                     self.file_size = file_path.stat().st_size
                     self._file = None
                     self.bytes_read = 0
 
-                def __enter__(self):
+                def __enter__(self) -> "ProgressFileWrapper":
                     self._file = open(self.file_path, "rb")
                     return self
 
-                def __exit__(self, exc_type, exc_val, exc_tb):
+                def __exit__(self, exc_type, exc_val, exc_tb) -> None:
                     if self._file:
                         self._file.close()
 

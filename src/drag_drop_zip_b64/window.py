@@ -7,7 +7,7 @@ __all__ = ["DragDropZipBase64Window"]
 # Optional: Add convenience function for programmatic use
 
 
-def create_window():
+def create_window() -> DragDropZipBase64Window:
     """
     Create and return a new DragDropZipBase64Window instance.
 

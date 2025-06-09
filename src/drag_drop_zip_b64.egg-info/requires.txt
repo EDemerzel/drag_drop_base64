@@ -3,6 +3,7 @@ PyQt5-stubs==5.15.6.0
 cryptography>=3.4.8
 requests>=2.31.0
 urllib3>=2.0.0
+types-requests>=2.31.0
 
 [dev]
 pytest>=7.0.0
