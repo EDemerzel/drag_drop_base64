@@ -240,6 +240,15 @@ class NetworkWorker(QThread):
                         self._file.close()
 
                 def read(self, size: int = -1) -> bytes:
+                    """
+                    Read data from the file and update progress.
+
+                    Args:
+                        size (int, optional): Number of bytes to read. Defaults to -1.
+
+                    Returns:
+                        bytes: Data read from the file.
+                    """
                     if self._file is None:
                         return b""
 
@@ -248,16 +257,33 @@ class NetworkWorker(QThread):
                         self.bytes_read += len(data)
                         if self.file_size > 0:
                             progress_percent = int(
-                                (self.bytes_read / self.file_size) * 100)
+                                (self.bytes_read / self.file_size) * 100
+                            )
                             self.progress_callback(progress_percent)
                     return data
 
                 def seek(self, offset: int, whence: int = 0) -> int:
+                    """
+                    Seek to a specific position in the file.
+
+                    Args:
+                        offset (int): Offset to seek to.
+                        whence (int, optional): Reference point for seeking. Defaults to 0.
+
+                    Returns:
+                        int: New file position.
+                    """
                     if self._file is None:
                         return 0
                     return self._file.seek(offset, whence)
 
                 def tell(self) -> int:
+                    """
+                    Get the current file position.
+
+                    Returns:
+                        int: Current file position.
+                    """
                     if self._file is None:
                         return 0
                     return self._file.tell()
@@ -310,11 +336,22 @@ class ProcessWorker(QThread):
     error = pyqtSignal(str, str)
 
     def __init__(self, path: Path, parent: Optional[QWidget] = None) -> None:
+        """
+        Initialize the ProcessWorker for file/folder processing.
+
+        Args:
+            path (Path): Path to the file or folder to process.
+            parent (Optional[QWidget], optional): Parent Qt widget. Defaults to None.
+        """
         super().__init__(parent)
         self.path: Path = path
 
     def run(self) -> None:
-        """Executes the file/folder processing on a background thread."""
+        """
+        Execute the file/folder processing on a background thread.
+
+        This method processes the given path and emits signals upon completion or error.
+        """
         try:
             parent = self.parent()
             if isinstance(parent, DragDropZipBase64Window):
@@ -334,20 +371,25 @@ class DragDropZipBase64Window(QWidget):
     with optional encryption and secure network features.
 
     Features:
-    - Detects Base64 content and decodes to ZIP + extracts
-    - Compresses non-Base64 content to ZIP + Base64 encodes
-    - Optional AES encryption/decryption with password protection
-    - Secure ZIP extraction with path traversal protection
-    - Secure HTTPS upload capabilities with SSL/TLS verification
+    - Detects Base64 content and decodes to ZIP + extracts.
+    - Compresses non-Base64 content to ZIP + Base64 encodes.
+    - Optional AES encryption/decryption with password protection.
+    - Secure ZIP extraction with path traversal protection.
+    - Secure HTTPS upload capabilities with SSL/TLS verification.
     """
 
     def __init__(self) -> None:
+        """
+        Initialize the DragDropZipBase64Window with UI components.
+        """
         super().__init__()
         self.init_ui()
         self.network_worker = None
 
     def init_ui(self) -> None:
-        """Sets up the window UI with encryption and network options."""
+        """
+        Set up the window UI with encryption and network options.
+        """
         self.setWindowTitle(
             "Drag & Drop Ultra Compress & Base64 with Encryption & Secure Upload")
         self.setAcceptDrops(True)

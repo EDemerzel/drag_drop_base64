@@ -4,6 +4,7 @@ import logging
 import os
 import ssl
 import sys
+import urllib3
 
 from PyQt5.QtWidgets import QApplication
 
@@ -14,7 +15,6 @@ def configure_ssl_bypass() -> None:
     """Configure SSL bypass for runtime network operations if needed."""
     # Only bypass SSL in development/problematic networks
     if os.getenv("DRAG_DROP_BYPASS_SSL", "").lower() in ("1", "true", "yes"):
-        import urllib3
 
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

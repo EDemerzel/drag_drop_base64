@@ -28,7 +28,8 @@ License: # MIT License
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: PyQt5>=5.15
+Requires-Dist: PyQt5==5.15.11
+Requires-Dist: PyQt5-stubs==5.15.6.0
 Requires-Dist: cryptography>=3.4.8
 Requires-Dist: requests>=2.31.0
 Requires-Dist: urllib3>=2.0.0
